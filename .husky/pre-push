@@ -1,0 +1,1 @@
+yarn prettify && yarn lint && yarn test

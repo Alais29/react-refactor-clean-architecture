@@ -1,9 +1,15 @@
-import { render, screen } from "@testing-library/react";
+import { RenderResult, render, screen } from "@testing-library/react";
 import { test } from "vitest";
-import App from "../../App";
+import { ProductsPage } from "../ProductsPage";
+import { ReactNode } from "react";
+import { AppProvider } from "../../context/AppProvider";
 
 test("Loads and displays title", async () => {
-    render(<App />);
+  renderComponent(<ProductsPage />);
 
-    await screen.findAllByRole("heading", { name: "Product price updater" });
+  await screen.findAllByRole("heading", { name: "Product price updater" });
 });
+
+function renderComponent(component: ReactNode): RenderResult {
+  return render(<AppProvider>{component}</AppProvider>);
+}

@@ -190,6 +190,7 @@ export const ProductsPage: React.FC = () => {
           {"Product price updater"}
         </Typography>
         <DataGrid<Product>
+          columnBuffer={10}
           rowHeight={300}
           rows={products}
           columns={columns}

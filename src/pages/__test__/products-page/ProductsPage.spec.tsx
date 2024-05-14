@@ -7,7 +7,9 @@ import { MockWebServer } from "../../../tests/MockWebServer";
 import { givenAProducts, givenThereAreNoProducts } from "./ProductsPage.fixture";
 import {
   openDialogToEditPrice,
+  typePrice,
   verifyDialog,
+  verifyError,
   verifyHeader,
   verifyRows,
   waitForTableToBeLoaded,
@@ -60,14 +62,45 @@ describe("Products page", () => {
   describe("Edit price", () => {
     test("should show a dialog with the product", async () => {
       const products = givenAProducts(mockWebServer);
-
       renderComponent(<ProductsPage />);
 
       await waitForTableToBeLoaded();
 
       const dialog = await openDialogToEditPrice(0);
-
       verifyDialog(dialog, products[0]);
+    });
+
+    test("should show error for negative price", async () => {
+      givenAProducts(mockWebServer);
+      renderComponent(<ProductsPage />);
+
+      await waitForTableToBeLoaded();
+
+      const dialog = await openDialogToEditPrice(0);
+      await typePrice(dialog, "-4");
+      await verifyError(dialog, "Invalid price format");
+    });
+
+    test("should show error for non number price", async () => {
+      givenAProducts(mockWebServer);
+      renderComponent(<ProductsPage />);
+
+      await waitForTableToBeLoaded();
+
+      const dialog = await openDialogToEditPrice(0);
+      await typePrice(dialog, "non numeric value");
+      await verifyError(dialog, "Only numbers are allowed");
+    });
+
+    test("should show error for prices greater than maximum", async () => {
+      givenAProducts(mockWebServer);
+      renderComponent(<ProductsPage />);
+
+      await waitForTableToBeLoaded();
+
+      const dialog = await openDialogToEditPrice(0);
+      await typePrice(dialog, "10000");
+      await verifyError(dialog, "The max possible price is 999.99");
     });
   });
 });

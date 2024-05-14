@@ -52,10 +52,10 @@ export async function openDialogToEditPrice(index: number): Promise<HTMLElement>
 
   const row = rows[index];
   const rowScope = within(row);
-  userEvent.click(rowScope.getByRole("menuitem"));
+  await userEvent.click(rowScope.getByRole("menuitem"));
 
   const updatePriceMenu = await screen.findByRole("menuitem", { name: /update price/i });
-  userEvent.click(updatePriceMenu);
+  await userEvent.click(updatePriceMenu);
 
   return await screen.findByRole("dialog");
 }
@@ -68,4 +68,19 @@ export function verifyDialog(dialog: HTMLElement, product: RemoteProduct) {
 
   dialogScope.getByText(product.title);
   expect(dialogScope.getByDisplayValue(product.price));
+}
+
+export async function typePrice(dialog: HTMLElement, price: string) {
+  const dialogScope = within(dialog);
+
+  const priceTextBox = dialogScope.getByRole("textbox", { name: /price/i });
+
+  await userEvent.clear(priceTextBox);
+  await userEvent.type(priceTextBox, price);
+}
+
+export async function verifyError(dialog: HTMLElement, error: string) {
+  const dialogScope = within(dialog);
+
+  await dialogScope.findByText(error);
 }

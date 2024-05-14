@@ -5,7 +5,13 @@ import { ReactNode } from "react";
 import { AppProvider } from "../../../context/AppProvider";
 import { MockWebServer } from "../../../tests/MockWebServer";
 import { givenAProducts, givenThereAreNoProducts } from "./ProductsPage.fixture";
-import { verifyHeader, verifyRows, waitForTableToBeLoaded } from "./ProductsPage.helpers";
+import {
+  openDialogToEditPrice,
+  verifyDialog,
+  verifyHeader,
+  verifyRows,
+  waitForTableToBeLoaded,
+} from "./ProductsPage.helpers";
 
 const mockWebServer = new MockWebServer();
 
@@ -22,31 +28,47 @@ describe("Products page", () => {
     await screen.findAllByRole("heading", { name: "Product price updater" });
   });
 
-  test("should show an empty table if there is no data", async () => {
-    givenThereAreNoProducts(mockWebServer);
+  describe("Table", () => {
+    test("should show an empty table if there is no data", async () => {
+      givenThereAreNoProducts(mockWebServer);
 
-    renderComponent(<ProductsPage />);
+      renderComponent(<ProductsPage />);
 
-    const rows = await screen.findAllByRole("row");
+      const rows = await screen.findAllByRole("row");
 
-    expect(rows.length).toBe(1);
+      expect(rows.length).toBe(1);
 
-    verifyHeader(rows[0]);
+      verifyHeader(rows[0]);
+    });
+
+    test("should show expected header and rows in the table", async () => {
+      const products = givenAProducts(mockWebServer);
+
+      renderComponent(<ProductsPage />);
+
+      await waitForTableToBeLoaded();
+
+      const allRows = await screen.findAllByRole("row");
+      const [header, ...rows] = allRows;
+
+      verifyHeader(header);
+
+      verifyRows(rows, products);
+    });
   });
 
-  test("should show expected header and rows in the table", async () => {
-    const products = givenAProducts(mockWebServer);
+  describe("Edit price", () => {
+    test("should show a dialog with the product", async () => {
+      const products = givenAProducts(mockWebServer);
 
-    renderComponent(<ProductsPage />);
+      renderComponent(<ProductsPage />);
 
-    await waitForTableToBeLoaded();
+      await waitForTableToBeLoaded();
 
-    const allRows = await screen.findAllByRole("row");
-    const [header, ...rows] = allRows;
+      const dialog = await openDialogToEditPrice(0);
 
-    verifyHeader(header);
-
-    verifyRows(rows, products);
+      verifyDialog(dialog, products[0]);
+    });
   });
 });
 

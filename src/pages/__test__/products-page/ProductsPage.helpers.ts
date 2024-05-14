@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import { expect } from "vitest";
 import { RemoteProduct } from "../../../api/StoreApi";
+import userEvent from "@testing-library/user-event";
 
 export function verifyHeader(headerRow: HTMLElement) {
   // We can't directly look for an HTML element with react testing library so we turn it into a scope
@@ -42,4 +43,29 @@ export function verifyRows(rows: HTMLElement[], products: RemoteProduct[]) {
     within(cells[3]).getByText(`$${product.price.toFixed(2)}`);
     within(cells[4]).getByText(product.price === 0 ? "inactive" : "active");
   });
+}
+
+export async function openDialogToEditPrice(index: number): Promise<HTMLElement> {
+  const allRows = await screen.findAllByRole("row");
+  // get rows other than header
+  const [, ...rows] = allRows;
+
+  const row = rows[index];
+  const rowScope = within(row);
+  userEvent.click(rowScope.getByRole("menuitem"));
+
+  const updatePriceMenu = await screen.findByRole("menuitem", { name: /update price/i });
+  userEvent.click(updatePriceMenu);
+
+  return await screen.findByRole("dialog");
+}
+
+export function verifyDialog(dialog: HTMLElement, product: RemoteProduct) {
+  const dialogScope = within(dialog);
+
+  const image: HTMLImageElement = dialogScope.getByRole("img");
+  expect(image.src).toBe(product.image);
+
+  dialogScope.getByText(product.title);
+  expect(dialogScope.getByDisplayValue(product.price));
 }

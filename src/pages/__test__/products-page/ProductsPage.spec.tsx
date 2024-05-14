@@ -16,6 +16,7 @@ import {
   verifyHeader,
   verifyPriceAndStatusInRow,
   verifyRows,
+  verifySaveIsDisabled,
   waitForTableToBeLoaded,
 } from "./ProductsPage.helpers";
 
@@ -83,6 +84,7 @@ describe("Products page", () => {
       const dialog = await openDialogToEditPrice(0);
       await typePrice(dialog, "-4");
       await verifyError(dialog, "Invalid price format");
+      await verifySaveIsDisabled(dialog);
     });
 
     test("should show error for non number price", async () => {
@@ -94,6 +96,7 @@ describe("Products page", () => {
       const dialog = await openDialogToEditPrice(0);
       await typePrice(dialog, "non numeric value");
       await verifyError(dialog, "Only numbers are allowed");
+      await verifySaveIsDisabled(dialog);
     });
 
     test("should show error for prices greater than maximum", async () => {
@@ -105,6 +108,7 @@ describe("Products page", () => {
       const dialog = await openDialogToEditPrice(0);
       await typePrice(dialog, "10000");
       await verifyError(dialog, "The max possible price is 999.99");
+      await verifySaveIsDisabled(dialog);
     });
 
     test("should edit price correctly and mark status as active for a price greater than 0", async () => {

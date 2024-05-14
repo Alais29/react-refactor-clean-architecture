@@ -228,6 +228,7 @@ export const ProductsPage: React.FC = () => {
           title={"Update price"}
           onSave={saveEditPrice}
           onCancel={cancelEditPrice}
+          disableSave={priceError !== undefined}
         >
           <Stack direction="row">
             <Box width={250}>

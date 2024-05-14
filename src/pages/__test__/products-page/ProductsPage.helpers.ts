@@ -46,6 +46,12 @@ export function verifyRows(rows: HTMLElement[], products: RemoteProduct[]) {
 }
 
 export async function openDialogToEditPrice(index: number): Promise<HTMLElement> {
+  await tryOpenDialogToEditPrice(index);
+
+  return await screen.findByRole("dialog");
+}
+
+export async function tryOpenDialogToEditPrice(index: number) {
   const allRows = await screen.findAllByRole("row");
   // get rows other than header
   const [, ...rows] = allRows;
@@ -56,8 +62,6 @@ export async function openDialogToEditPrice(index: number): Promise<HTMLElement>
 
   const updatePriceMenu = await screen.findByRole("menuitem", { name: /update price/i });
   await userEvent.click(updatePriceMenu);
-
-  return await screen.findByRole("dialog");
 }
 
 export function verifyDialog(dialog: HTMLElement, product: RemoteProduct) {
@@ -106,4 +110,17 @@ export async function verifyPriceAndStatusInRow(
 
   await within(cells[3]).findByText(`$${(+newPrice).toFixed(2)}`);
   await within(cells[4]).findByText(status);
+}
+
+export async function changeToNonAdminUser() {
+  const userButton = screen.getByRole("button", {
+    name: /user: admin user/i,
+  });
+
+  await userEvent.click(userButton);
+
+  const userMenu = screen.getByRole("menu");
+  const userMenuScope = within(userMenu);
+
+  await userEvent.click(userMenuScope.getByRole("menuitem", { name: /non admin user/i }));
 }

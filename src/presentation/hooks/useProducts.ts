@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useReload } from "./useReload";
-import { RemoteProduct, StoreApi } from "../api/StoreApi";
+import { RemoteProduct, StoreApi } from "../../data/api/StoreApi";
 
 export interface Product {
   id: number;

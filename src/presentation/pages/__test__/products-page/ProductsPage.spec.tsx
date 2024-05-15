@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, test } from "vitest";
 import { ProductsPage } from "../../ProductsPage";
 import { ReactNode } from "react";
 import { AppProvider } from "../../../context/AppProvider";
-import { MockWebServer } from "../../../tests/MockWebServer";
+import { MockWebServer } from "../../../../tests/MockWebServer";
 import { givenAProducts, givenThereAreNoProducts } from "./ProductsPage.fixture";
 import {
   changeToNonAdminUser,

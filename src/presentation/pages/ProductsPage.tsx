@@ -8,14 +8,13 @@ import {
 import { Footer } from "../components/Footer";
 import { MainAppBar } from "../components/MainAppBar";
 import styled from "@emotion/styled";
-import { ChangeEvent, useCallback, useMemo, useState } from "react";
-import { useAppContext } from "../context/useAppContext";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { StoreApi } from "../../data/api/StoreApi";
 import { GetProductsUseCase } from "../../domain/GetProductsUseCase";
 import { Product } from "../../domain/Product";
 import { useProducts } from "../hooks/useProducts";
-import { ProductApiRepository, buildProduct } from "../../data/ProductApiRepository";
+import { ProductApiRepository } from "../../data/ProductApiRepository";
 
 const baseColumn: Partial<GridColDef<Product>> = {
   disableColumnMenu: true,
@@ -30,45 +29,28 @@ function createGetProductsUseCase(): GetProductsUseCase {
 }
 
 export const ProductsPage: React.FC = () => {
-  const { currentUser } = useAppContext();
-
+  /**
+   * @deprecated use error returned in useProducts instead of snackBarError
+   */
   const [snackBarError, setSnackBarError] = useState<string>();
   const [snackBarSuccess, setSnackBarSuccess] = useState<string>();
 
-  const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
   const [priceError, setPriceError] = useState<string | undefined>(undefined);
 
   const getProductsUseCase = useMemo(() => createGetProductsUseCase(), []);
-  const { products, reload } = useProducts(getProductsUseCase);
+  const {
+    products,
+    reload,
+    updatingQuantity,
+    editingProduct,
+    setEditingProduct,
+    error,
+    cancelEditPrice,
+  } = useProducts(getProductsUseCase, storeApi);
 
-  // FIXME: Load product
-  // FIXME: User validation
-  const updatingQuantity = useCallback(
-    async (id: number) => {
-      if (id) {
-        if (!currentUser.isAdmin) {
-          setSnackBarError("Only admin users can edit the price of a product");
-          return;
-        }
-
-        storeApi
-          .get(id)
-          .then(buildProduct)
-          .then(product => {
-            setEditingProduct(product);
-          })
-          .catch(() => {
-            setSnackBarError(`Product with id ${id} not found`);
-          });
-      }
-    },
-    [currentUser]
-  );
-
-  // FIXME: Close dialog
-  const cancelEditPrice = useCallback(() => {
-    setEditingProduct(undefined);
-  }, []);
+  useEffect(() => {
+    setSnackBarError(error);
+  }, [error]);
 
   // FIXME: Price validations
   function handleChangePrice(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
@@ -109,7 +91,7 @@ export const ProductsPage: React.FC = () => {
         setEditingProduct(undefined);
         reload();
       } catch (error) {
-        setSnackBarSuccess(
+        setSnackBarError(
           `An error has ocurred updating the price ${editingProduct.price} for '${editingProduct.title}'`
         );
         setEditingProduct(undefined);

@@ -12,9 +12,10 @@ import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { useAppContext } from "../context/useAppContext";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { StoreApi } from "../../data/api/StoreApi";
-import { GetProductsUseCase, buildProduct } from "../../domain/GetProductsUseCase";
+import { GetProductsUseCase } from "../../domain/GetProductsUseCase";
 import { Product } from "../../domain/Product";
 import { useProducts } from "../hooks/useProducts";
+import { ProductApiRepository, buildProduct } from "../../data/ProductApiRepository";
 
 const baseColumn: Partial<GridColDef<Product>> = {
   disableColumnMenu: true,
@@ -24,7 +25,8 @@ const baseColumn: Partial<GridColDef<Product>> = {
 const storeApi = new StoreApi();
 
 function createGetProductsUseCase(): GetProductsUseCase {
-  return new GetProductsUseCase(storeApi);
+  const productRepository = new ProductApiRepository(storeApi);
+  return new GetProductsUseCase(productRepository);
 }
 
 export const ProductsPage: React.FC = () => {

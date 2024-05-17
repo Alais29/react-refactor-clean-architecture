@@ -2,8 +2,8 @@ import { Product } from "./Product";
 import { ProductRepository } from "./ProductRepository";
 
 export class GetProductsUseCase {
-  constructor(private ProductRepository: ProductRepository) {}
+  constructor(private productRepository: ProductRepository) {}
   async execute(): Promise<Product[]> {
-    return this.ProductRepository.getAll();
+    return this.productRepository.getAll();
   }
 }

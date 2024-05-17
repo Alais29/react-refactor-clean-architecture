@@ -1,5 +1,5 @@
 import { Product } from "../domain/Product";
-import { ProductRepository } from "../domain/ProductRepository";
+import { ProductRepository, ResourceNotFound } from "../domain/ProductRepository";
 import { RemoteProduct, StoreApi } from "./api/StoreApi";
 
 export class ProductApiRepository implements ProductRepository {
@@ -8,9 +8,17 @@ export class ProductApiRepository implements ProductRepository {
     const remoteProducts = await this.storeApi.getAll();
     return remoteProducts.map(buildProduct);
   }
+  async getById(id: number): Promise<Product> {
+    try {
+      const remoteProduct = await this.storeApi.get(id);
+      return buildProduct(remoteProduct);
+    } catch (error) {
+      throw new ResourceNotFound(`Product with id ${id} not found`);
+    }
+  }
 }
 
-export function buildProduct(remoteProduct: RemoteProduct): Product {
+function buildProduct(remoteProduct: RemoteProduct): Product {
   return {
     id: remoteProduct.id,
     title: remoteProduct.title,

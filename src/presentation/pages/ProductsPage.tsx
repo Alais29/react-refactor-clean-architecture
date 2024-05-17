@@ -10,28 +10,14 @@ import { MainAppBar } from "../components/MainAppBar";
 import styled from "@emotion/styled";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
-import { StoreApi } from "../../data/api/StoreApi";
-import { GetProductsUseCase } from "../../domain/GetProductsUseCase";
 import { Product } from "../../domain/Product";
 import { useProducts } from "../hooks/useProducts";
-import { ProductApiRepository } from "../../data/ProductApiRepository";
-import { GetProductByIdUseCase } from "../../domain/GetProductByIdUseCase";
+import { CompositionRoot } from "../../CompositionRoot";
 
 const baseColumn: Partial<GridColDef<Product>> = {
   disableColumnMenu: true,
   sortable: false,
 };
-
-const storeApi = new StoreApi();
-const productRepository = new ProductApiRepository(storeApi);
-
-function createGetProductsUseCase(): GetProductsUseCase {
-  return new GetProductsUseCase(productRepository);
-}
-
-function createGetProductByIdUseCase(): GetProductByIdUseCase {
-  return new GetProductByIdUseCase(productRepository);
-}
 
 export const ProductsPage: React.FC = () => {
   /**
@@ -42,8 +28,14 @@ export const ProductsPage: React.FC = () => {
 
   const [priceError, setPriceError] = useState<string | undefined>(undefined);
 
-  const getProductsUseCase = useMemo(() => createGetProductsUseCase(), []);
-  const getProductByIdUseCase = useMemo(() => createGetProductByIdUseCase(), []);
+  const getProductsUseCase = useMemo(
+    () => CompositionRoot.getInstance().provideGetProductsUseCase(),
+    []
+  );
+  const getProductByIdUseCase = useMemo(
+    () => CompositionRoot.getInstance().provideGetProductByIdUseCase(),
+    []
+  );
 
   const {
     products,
@@ -82,6 +74,7 @@ export const ProductsPage: React.FC = () => {
   // FIXME: Save price
   async function saveEditPrice(): Promise<void> {
     if (editingProduct) {
+      const storeApi = CompositionRoot.getInstance().provideStoreApi();
       const remoteProduct = await storeApi.get(editingProduct.id);
 
       if (!remoteProduct) return;

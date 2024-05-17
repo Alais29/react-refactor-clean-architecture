@@ -16,6 +16,7 @@ export const useProducts = (
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
 
   const [error, setError] = useState<string>();
+  const [priceError, setPriceError] = useState<string | undefined>(undefined);
 
   const { currentUser } = useAppContext();
 
@@ -53,6 +54,25 @@ export const useProducts = (
     setEditingProduct(undefined);
   }, [setEditingProduct]);
 
+  function onChangePrice(price: string): void {
+    if (!editingProduct) return;
+
+    const isValidNumber = !isNaN(+price);
+    setEditingProduct({ ...editingProduct, price: price });
+
+    if (!isValidNumber) {
+      setPriceError("Only numbers are allowed");
+    } else {
+      if (!priceRegex.test(price)) {
+        setPriceError("Invalid price format");
+      } else if (+price > 999.99) {
+        setPriceError("The max possible price is 999.99");
+      } else {
+        setPriceError(undefined);
+      }
+    }
+  }
+
   return {
     reload,
     products,
@@ -61,5 +81,9 @@ export const useProducts = (
     setEditingProduct,
     error,
     cancelEditPrice,
+    priceError,
+    onChangePrice,
   };
 };
+
+const priceRegex = /^\d+(\.\d{1,2})?$/;

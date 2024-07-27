@@ -16,6 +16,19 @@ export class ProductApiRepository implements ProductRepository {
       throw new ResourceNotFound(`Product with id ${id} not found`);
     }
   }
+
+  async save(product: Product): Promise<void> {
+    const remoteProduct = await this.storeApi.get(product.id);
+
+    if (!remoteProduct) return;
+
+    const editedRemoteProduct = {
+      ...remoteProduct,
+      price: Number(product.price.value),
+    };
+
+    return this.storeApi.post(editedRemoteProduct);
+  }
 }
 
 function buildProduct(remoteProduct: RemoteProduct): Product {

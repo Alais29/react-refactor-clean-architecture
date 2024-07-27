@@ -28,10 +28,6 @@ export class CompositionRoot {
   }
 
   provideUpdateProductPriceUseCase(): UpdateProductPriceUseCase {
-    return new UpdateProductPriceUseCase(this.storeApi);
-  }
-
-  provideStoreApi(): StoreApi {
-    return this.storeApi;
+    return new UpdateProductPriceUseCase(this.productRepository);
   }
 }

@@ -6,7 +6,10 @@ import { useAppContext } from "../context/useAppContext";
 import { GetProductByIdUseCase } from "../../domain/GetProductByIdUseCase";
 import { ResourceNotFound } from "../../domain/ProductRepository";
 import { Price, ValidationError } from "../../domain/Price";
-import { StoreApi } from "../../data/api/StoreApi";
+import {
+  ActionNotAllowedError,
+  UpdateProductPriceUseCase,
+} from "../../domain/UpdateProductPriceUseCase";
 
 export type ProductViewModel = ProductData & { status: ProductStatus };
 
@@ -15,7 +18,7 @@ type Message = { type: "error" | "success"; text: string };
 export const useProducts = (
   getProductsUseCase: GetProductsUseCase,
   getProductByIdUseCase: GetProductByIdUseCase,
-  storeApi: StoreApi
+  updateProductPriceUseCase: UpdateProductPriceUseCase
 ) => {
   const [reloadKey, reload] = useReload();
 
@@ -81,17 +84,12 @@ export const useProducts = (
 
   async function saveEditPrice(): Promise<void> {
     if (editingProduct) {
-      const remoteProduct = await storeApi.get(editingProduct.id);
-
-      if (!remoteProduct) return;
-
-      const editedRemoteProduct = {
-        ...remoteProduct,
-        price: Number(editingProduct.price),
-      };
-
       try {
-        await storeApi.post(editedRemoteProduct);
+        await updateProductPriceUseCase.execute(
+          currentUser,
+          editingProduct.id,
+          editingProduct.price
+        );
 
         setMessage({
           type: "success",
@@ -100,6 +98,10 @@ export const useProducts = (
         setEditingProduct(undefined);
         reload();
       } catch (error) {
+        if (error instanceof ActionNotAllowedError) {
+          setMessage({ type: "error", text: error.message });
+        }
+
         setMessage({
           type: "error",
           text: `An error has ocurred updating the price ${editingProduct.price} for '${editingProduct.title}'`,

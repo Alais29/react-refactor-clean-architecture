@@ -28,7 +28,10 @@ export const ProductsPage: React.FC = () => {
     () => CompositionRoot.getInstance().provideGetProductByIdUseCase(),
     []
   );
-  const storeApi = useMemo(() => CompositionRoot.getInstance().provideStoreApi(), []);
+  const updateProductPriceUseCase = useMemo(
+    () => CompositionRoot.getInstance().provideUpdateProductPriceUseCase(),
+    []
+  );
 
   const {
     products,
@@ -40,7 +43,7 @@ export const ProductsPage: React.FC = () => {
     saveEditPrice,
     onChangePrice,
     onCloseMessage,
-  } = useProducts(getProductsUseCase, getProductByIdUseCase, storeApi);
+  } = useProducts(getProductsUseCase, getProductByIdUseCase, updateProductPriceUseCase);
 
   function handleChangePrice(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
     onChangePrice(event.target.value);

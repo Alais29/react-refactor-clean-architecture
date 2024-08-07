@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useReload } from "./useReload";
 import { GetProductsUseCase } from "../../domain/GetProductsUseCase";
-import { Product, ProductData, ProductStatus } from "../../domain/Product";
+import { Product } from "../../domain/Product";
 import { useAppContext } from "../context/useAppContext";
 import { GetProductByIdUseCase } from "../../domain/GetProductByIdUseCase";
 import { ResourceNotFound } from "../../domain/ProductRepository";
@@ -10,16 +10,13 @@ import {
   ActionNotAllowedError,
   UpdateProductPriceUseCase,
 } from "../../domain/UpdateProductPriceUseCase";
-
-export type ProductViewModel = ProductData & { status: ProductStatus };
-
-type Message = { type: "error" | "success"; text: string };
+import { Message, ProductViewModel, useProductState } from "./useProductsState";
 
 export const useProducts = (
   getProductsUseCase: GetProductsUseCase,
   getProductByIdUseCase: GetProductByIdUseCase,
   updateProductPriceUseCase: UpdateProductPriceUseCase
-) => {
+): useProductState => {
   const [reloadKey, reload] = useReload();
 
   const [products, setProducts] = useState<ProductViewModel[]>([]);
@@ -65,24 +62,27 @@ export const useProducts = (
     setEditingProduct(undefined);
   }, [setEditingProduct]);
 
-  function onChangePrice(price: string): void {
-    if (!editingProduct) return;
+  const onChangePrice = useCallback(
+    (price: string): void => {
+      if (!editingProduct) return;
 
-    try {
-      setEditingProduct({ ...editingProduct, price: price });
+      try {
+        setEditingProduct({ ...editingProduct, price: price });
 
-      Price.create(price);
-      setPriceError(undefined);
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        setPriceError(error.message);
-      } else {
-        setPriceError("Unexpected error has occured");
+        Price.create(price);
+        setPriceError(undefined);
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          setPriceError(error.message);
+        } else {
+          setPriceError("Unexpected error has occured");
+        }
       }
-    }
-  }
+    },
+    [editingProduct]
+  );
 
-  async function saveEditPrice(): Promise<void> {
+  const saveEditPrice = useCallback(async (): Promise<void> => {
     if (editingProduct) {
       try {
         await updateProductPriceUseCase.execute(
@@ -110,18 +110,16 @@ export const useProducts = (
         reload();
       }
     }
-  }
+  }, [currentUser, editingProduct, reload, updateProductPriceUseCase]);
 
   const onCloseMessage = useCallback(() => {
     setMessage(undefined);
   }, []);
 
   return {
-    reload,
     products,
     updatingQuantity,
     editingProduct,
-    setEditingProduct,
     message,
     cancelEditPrice,
     priceError,
